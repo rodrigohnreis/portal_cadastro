@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipes - Portal de Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Portal de Cadastro</div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">Início</a></li>
+                    <li><a href="/cidades" class="nav-link">Cidades</a></li>
+                    <li><a href="/equipes" class="nav-link active">Equipes</a></li>
+                    <li><a href="/materiais" class="nav-link">Materiais</a></li>
+                    <li><a href="/registros" class="nav-link">Registros</a></li>
+                    <li><a href="/relatorios" class="nav-link">Relatórios</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Alertas -->
+            <div id="alert-container"></div>
+
+            <!-- Seção de Equipes -->
+            <section id="equipes" class="page-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Gerenciamento de Equipes</h2>
+                        <button class="btn" id="btn-nova-equipe">Nova Equipe</button>
+                    </div>
+                    <div id="form-equipe" style="display: none;" class="mb-3">
+                        <h3 class="mb-2">Cadastrar Equipe</h3>
+                        <form id="equipe-form">
+                            <input type="hidden" id="equipe-id">
+                            <div class="form-group">
+                                <label for="equipe-nome">Nome da Equipe</label>
+                                <input type="text" id="equipe-nome" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="equipe-responsavel">Responsável</label>
+                                <input type="text" id="equipe-responsavel" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="equipe-contato">Supervisor</label>
+                                <input type="text" id="equipe-contato">
+                            </div>
+                            <div class="form-group">
+                                <label for="equipe-cidade">Cidade</label>
+                                <select id="equipe-cidade" required>
+                                    <option value="">Selecione uma cidade</option>
+                                    <!-- Opções serão carregadas via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-success">Salvar</button>
+                                <button type="button" class="btn btn-danger" id="btn-cancelar-equipe">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="tabela-equipes">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Responsável</th>
+                                    <th>Supervisor</th>
+                                    <th>Cidade</th>
+                                    <th>Data de Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/equipes.js"></script>
+</body>
+</html>
+

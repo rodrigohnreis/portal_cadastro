@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cidades - Portal de Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Portal de Cadastro</div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">Início</a></li>
+                    <li><a href="/cidades" class="nav-link active">Cidades</a></li>
+                    <li><a href="/equipes" class="nav-link">Equipes</a></li>
+                    <li><a href="/materiais" class="nav-link">Materiais</a></li>
+                    <li><a href="/registros" class="nav-link">Registros</a></li>
+                    <li><a href="/relatorios" class="nav-link">Relatórios</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Alertas -->
+            <div id="alert-container"></div>
+
+            <!-- Seção de Cidades -->
+            <section id="cidades" class="page-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Gerenciamento de Cidades</h2>
+                        <button class="btn" id="btn-nova-cidade">Nova Cidade</button>
+                    </div>
+                    <div id="form-cidade" style="display: none;" class="mb-3">
+                        <h3 class="mb-2">Cadastrar Cidade</h3>
+                        <form id="cidade-form">
+                            <input type="hidden" id="cidade-id">
+                            <div class="form-group">
+                                <label for="cidade-nome">Nome da Cidade</label>
+                                <input type="text" id="cidade-nome" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cidade-estado">Estado (UF)</label>
+                                <input type="text" id="cidade-estado" maxlength="2" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-success">Salvar</button>
+                                <button type="button" class="btn btn-danger" id="btn-cancelar-cidade">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="tabela-cidades">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Estado</th>
+                                    <th>Data de Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/cidades.js"></script>
+</body>
+</html>
+
