@@ -28,9 +28,9 @@ app.register_blueprint(registro_bp, url_prefix='/api/registros')
 app.register_blueprint(relatorio_bp, url_prefix='/api/relatorios')
 
 # Configuração do PostgreSQL com múltiplas opções de encoding
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
-#import os
-#app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
+import os
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
