@@ -1,7 +1,7 @@
 // Variáveis globais
 let registrosData = [];
-let equipesData = [];
 let materiaisData = [];
+let equipesData = [];
 let cidadesData = [];
 let materialIndex = 0; // Para controlar os IDs dos campos de material
 let editingRegistroId = null; // Para controlar qual registro está sendo editado
@@ -29,6 +29,7 @@ function loadCidades() {
         .then(response => response.json())
         .then(data => {
             cidadesData = data;
+            populateCidadesSelect();
         })
         .catch(error => {
             console.error("Erro ao carregar cidades:", error);
@@ -168,6 +169,7 @@ function showRegistroForm(isEdit = false) {
         // Limpar campos para novo registro
         editingRegistroId = null;
         document.getElementById("registro-equipe").value = "";
+        document.getElementById("registro-cidade").value = "";
         document.getElementById("registro-data").value = "";
         document.getElementById("registro-atividade").value = "";
         document.getElementById("registro-observacao").value = "";
@@ -196,6 +198,7 @@ function handleRegistroSubmit(e) {
     e.preventDefault();
     
     const equipeId = document.getElementById("registro-equipe").value;
+    const cidadeId = document.getElementById("registro-cidade").value;
     const data = document.getElementById("registro-data").value;
     const atividade = document.getElementById("registro-atividade").value;
     const observacao = document.getElementById("registro-observacao").value;
@@ -205,18 +208,14 @@ function handleRegistroSubmit(e) {
         const materialId = document.getElementById("registro-material-0").value;
         const quantidade = document.getElementById("registro-quantidade-0").value;
         
-        if (!materialId || !quantidade) {
-            showAlert("Por favor, preencha o material e quantidade.", "danger");
-            return;
-        }
-        
-        if (!atividade) {
-            showAlert("Por favor, preencha a atividade.", "danger");
+        if (!materialId || !quantidade || !atividade || !cidadeId) {
+            showAlert("Por favor, preencha todos os campos obrigatórios (material, quantidade, atividade e cidade).", "danger");
             return;
         }
         
         const registroData = {
             equipe_id: parseInt(equipeId),
+            cidade_id: parseInt(cidadeId),
             material_id: parseInt(materialId),
             quantidade: parseFloat(quantidade),
             atividade: atividade,
@@ -269,6 +268,7 @@ function handleRegistroSubmit(e) {
         
         const registroData = {
             equipe_id: parseInt(equipeId),
+            cidade_id: parseInt(cidadeId),
             data_registro: data,
             observacao: observacao,
             materiais: materiais
@@ -308,6 +308,7 @@ function editRegistro(id) {
         
         // Preencher o formulário com os dados do registro
         document.getElementById("registro-equipe").value = registro.equipe_id;
+        document.getElementById("registro-cidade").value = registro.cidade_id || "";
         document.getElementById("registro-data").value = registro.data_registro.split(' ')[0]; // Pegar apenas a data
         document.getElementById("registro-atividade").value = registro.atividade || "";
         document.getElementById("registro-observacao").value = registro.observacao || "";
@@ -362,5 +363,18 @@ function showAlert(message, type) {
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
+}
+
+
+function populateCidadesSelect() {
+    const select = document.getElementById("registro-cidade");
+    select.innerHTML = "<option value=\"\">Selecione uma cidade</option>";
+    
+    cidadesData.forEach(cidade => {
+        const option = document.createElement("option");
+        option.value = cidade.id;
+        option.textContent = `${cidade.nome} - ${cidade.estado}`;
+        select.appendChild(option);
+    });
 }
 

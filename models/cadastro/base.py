@@ -78,22 +78,22 @@ class RegistroMaterial(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     material_id = db.Column(db.Integer, db.ForeignKey('materiais.id'), nullable=False)
-    equipe_id = db.Column(db.Integer, db.ForeignKey('equipes.id'), nullable=False)
+    equipe_id = db.Column(db.Integer, db.ForeignKey("equipes.id"), nullable=False)
     quantidade = db.Column(db.Float, nullable=False)
     atividade = db.Column(db.String(100), nullable=False)
     data_registro = db.Column(db.DateTime, default=datetime.utcnow)
     observacao = db.Column(db.Text)
     
     def __repr__(self):
-        return f'<RegistroMaterial {self.id}>'
+        return f"<RegistroMaterial {self.id}>"
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'material_id': self.material_id,
-            'equipe_id': self.equipe_id,
-            'quantidade': self.quantidade,
-            'atividade': self.atividade,
-            'data_registro': self.data_registro.strftime('%d/%m/%Y %H:%M:%S'),
-            'observacao': self.observacao
+            "id": self.id,
+            "material_id": self.material_id,
+            "equipe_id": self.equipe_id,
+            "quantidade": self.quantidade,
+            "atividade": self.atividade,
+            "data_registro": self.data_registro.strftime("%d/%m/%Y %H:%M:%S"),
+            "observacao": self.observacao
         }

@@ -22,8 +22,8 @@ def criar_registro():
     """Cria um novo registro de uso de material"""
     dados = request.json
     
-    if not dados or not 'material_id' in dados or not 'equipe_id' in dados or not 'quantidade' in dados or not 'atividade' in dados:
-        return jsonify({'erro': 'Dados incompletos. Material, equipe, quantidade e atividade são obrigatórios.'}), 400
+    if not dados or not 'material_id' in dados or not 'equipe_id' in dados or not 'quantidade' in dados or not 'atividade' in dados or not 'cidade_id' in dados:
+        return jsonify({'erro': 'Dados incompletos. Material, equipe, quantidade, atividade e cidade são obrigatórios.'}), 400
     
     # Verifica se o material existe
     material = Material.query.get(dados['material_id'])
@@ -46,6 +46,7 @@ def criar_registro():
     novo_registro = RegistroMaterial(
         material_id=dados["material_id"],
         equipe_id=dados["equipe_id"],
+        cidade_id=dados["cidade_id"],
         quantidade=dados["quantidade"],
         atividade=dados["atividade"],
         observacao=dados.get("observacao", "")
@@ -67,8 +68,8 @@ def criar_registros_lote():
     """Cria múltiplos registros de uso de material para uma equipe em uma data"""
     dados = request.json
     
-    if not dados or not 'equipe_id' in dados or not 'materiais' in dados or not isinstance(dados['materiais'], list):
-        return jsonify({'erro': 'Dados incompletos. Equipe e lista de materiais são obrigatórios.'}), 400
+    if not dados or not 'equipe_id' in dados or not 'cidade_id' in dados or not 'materiais' in dados or not isinstance(dados['materiais'], list):
+        return jsonify({'erro': 'Dados incompletos. Equipe, cidade e lista de materiais são obrigatórios.'}), 400
     
     # Verifica se a equipe existe
     equipe = Equipe.query.get(dados['equipe_id'])
@@ -98,6 +99,7 @@ def criar_registros_lote():
         novo_registro = RegistroMaterial(
             material_id=item["material_id"],
             equipe_id=dados["equipe_id"],
+            cidade_id=dados["cidade_id"],
             quantidade=item["quantidade"],
             atividade=item.get("atividade", ""), # Adiciona atividade aqui
             observacao=item.get("observacao", "")
@@ -151,6 +153,9 @@ def atualizar_registro(id):
 
     if 'atividade' in dados:
         registro.atividade = dados['atividade']
+
+    if 'cidade_id' in dados:
+        registro.cidade_id = dados['cidade_id']
     
     if 'data_registro' in dados and dados['data_registro']:
         try:
