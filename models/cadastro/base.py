@@ -80,6 +80,7 @@ class RegistroMaterial(db.Model):
     material_id = db.Column(db.Integer, db.ForeignKey('materiais.id'), nullable=False)
     equipe_id = db.Column(db.Integer, db.ForeignKey('equipes.id'), nullable=False)
     quantidade = db.Column(db.Float, nullable=False)
+    atividade = db.Column(db.String(100), nullable=False)
     data_registro = db.Column(db.DateTime, default=datetime.utcnow)
     observacao = db.Column(db.Text)
     
@@ -92,6 +93,7 @@ class RegistroMaterial(db.Model):
             'material_id': self.material_id,
             'equipe_id': self.equipe_id,
             'quantidade': self.quantidade,
+            'atividade': self.atividade,
             'data_registro': self.data_registro.strftime('%d/%m/%Y %H:%M:%S'),
             'observacao': self.observacao
         }

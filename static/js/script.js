@@ -372,3 +372,199 @@ function updateTabelaMaterialEquipe(data) {
     });
 }
 
+
+// Variáveis globais para gráfico de atividade
+let materialAtividadeChart = null;
+
+// Função para carregar dados de material por atividade
+function carregarMaterialPorAtividade() {
+    const dataInicio = document.getElementById('data-inicio').value;
+    const dataFim = document.getElementById('data-fim').value;
+    
+    let url = '/api/relatorios/material-por-atividade';
+    const params = new URLSearchParams();
+    
+    if (dataInicio) params.append('data_inicio', dataInicio);
+    if (dataFim) params.append('data_fim', dataFim);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            renderizarGraficoMaterialAtividade(data);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar dados de material por atividade:', error);
+        });
+}
+
+// Função para renderizar gráfico de material por atividade
+function renderizarGraficoMaterialAtividade(dados) {
+    const ctx = document.getElementById('chart-material-atividade').getContext('2d');
+    
+    // Destruir gráfico anterior se existir
+    if (materialAtividadeChart) {
+        materialAtividadeChart.destroy();
+    }
+    
+    // Agrupar dados por atividade
+    const atividadeData = {};
+    dados.forEach(item => {
+        if (!atividadeData[item.atividade]) {
+            atividadeData[item.atividade] = 0;
+        }
+        atividadeData[item.atividade] += item.quantidade;
+    });
+    
+    const labels = Object.keys(atividadeData);
+    const values = Object.values(atividadeData);
+    
+    materialAtividadeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Quantidade Total',
+                data: values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(199, 199, 199, 0.8)',
+                    'rgba(83, 102, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)',
+                    'rgba(83, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Material por Atividade'
+                },
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Função para carregar tabela de material por atividade
+function carregarTabelaMaterialAtividade() {
+    const dataInicio = document.getElementById('data-inicio').value;
+    const dataFim = document.getElementById('data-fim').value;
+    
+    let url = '/api/relatorios/tabela-material-atividade';
+    const params = new URLSearchParams();
+    
+    if (dataInicio) params.append('data_inicio', dataInicio);
+    if (dataFim) params.append('data_fim', dataFim);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            renderizarTabelaMaterialAtividade(data);
+        })
+        .catch(error => {
+            console.error('Erro ao carregar tabela de material por atividade:', error);
+        });
+}
+
+// Função para renderizar tabela de material por atividade
+function renderizarTabelaMaterialAtividade(data) {
+    const tabela = document.getElementById('tabela-material-atividade');
+    const thead = tabela.querySelector('thead tr');
+    const tbody = tabela.querySelector('tbody');
+    
+    // Limpar tabela
+    thead.innerHTML = '<th>Material</th>';
+    tbody.innerHTML = '';
+    
+    // Adicionar colunas das atividades
+    data.atividades.forEach(atividade => {
+        const th = document.createElement('th');
+        th.textContent = atividade;
+        thead.appendChild(th);
+    });
+    
+    // Adicionar coluna total
+    const thTotal = document.createElement('th');
+    thTotal.textContent = 'Total';
+    thead.appendChild(thTotal);
+    
+    // Adicionar linhas dos materiais
+    data.materiais.forEach(material => {
+        const tr = document.createElement('tr');
+        
+        // Coluna do material
+        const tdMaterial = document.createElement('td');
+        tdMaterial.textContent = material;
+        tr.appendChild(tdMaterial);
+        
+        // Colunas das atividades
+        data.atividades.forEach(atividade => {
+            const td = document.createElement('td');
+            const quantidade = data.tabela[material] && data.tabela[material][atividade] ? data.tabela[material][atividade] : 0;
+            td.textContent = quantidade.toFixed(2);
+            tr.appendChild(td);
+        });
+        
+        // Coluna total
+        const tdTotal = document.createElement('td');
+        const total = data.tabela[material] ? data.tabela[material].total : 0;
+        tdTotal.textContent = total.toFixed(2);
+        tdTotal.style.fontWeight = 'bold';
+        tr.appendChild(tdTotal);
+        
+        tbody.appendChild(tr);
+    });
+}
+
+// Atualizar função aplicarFiltros para incluir atividade
+function aplicarFiltros() {
+    carregarMaterialPorCidade();
+    carregarMaterialPorEquipe();
+    carregarMaterialPorAtividade(); // Nova função
+    carregarTabelaMaterialCidade();
+    carregarTabelaMaterialEquipe();
+    carregarTabelaMaterialAtividade(); // Nova função
+}
+
+// Atualizar função carregarDadosIniciais para incluir atividade
+function carregarDadosIniciais() {
+    carregarEstatisticas();
+    carregarMaterialPorCidade();
+    carregarMaterialPorEquipe();
+    carregarMaterialPorAtividade(); // Nova função
+    carregarTabelaMaterialCidade();
+    carregarTabelaMaterialEquipe();
+    carregarTabelaMaterialAtividade(); // Nova função
+}
+

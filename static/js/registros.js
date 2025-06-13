@@ -2,10 +2,13 @@
 let registrosData = [];
 let equipesData = [];
 let materiaisData = [];
+let cidadesData = [];
 let materialIndex = 0; // Para controlar os IDs dos campos de material
+let editingRegistroId = null; // Para controlar qual registro está sendo editado
 
 // Funções de inicialização
 document.addEventListener("DOMContentLoaded", () => {
+    loadCidades();
     loadEquipes();
     loadMateriais();
     loadRegistros();
@@ -21,6 +24,17 @@ function setupFormEvents() {
 }
 
 // Funções para carregar dados
+function loadCidades() {
+    fetch("/api/cidades/")
+        .then(response => response.json())
+        .then(data => {
+            cidadesData = data;
+        })
+        .catch(error => {
+            console.error("Erro ao carregar cidades:", error);
+        });
+}
+
 function loadEquipes() {
     fetch("/api/equipes/")
         .then(response => response.json())
@@ -115,7 +129,7 @@ function renderRegistrosTable() {
     
     if (registrosData.length === 0) {
         const row = document.createElement("tr");
-        row.innerHTML = "<td colspan=\"6\" class=\"text-center\">Nenhum registro cadastrado</td>";
+        row.innerHTML = "<td colspan=\"8\" class=\"text-center\">Nenhum registro cadastrado</td>";
         tableBody.appendChild(row);
         return;
     }
@@ -123,13 +137,17 @@ function renderRegistrosTable() {
     registrosData.forEach(registro => {
         const equipe = equipesData.find(e => e.id === registro.equipe_id);
         const material = materiaisData.find(m => m.id === registro.material_id);
+        const cidade = equipe ? cidadesData.find(c => c.id === equipe.cidade_id) : null;
         
         const equipeNome = equipe ? equipe.nome : "Equipe não encontrada";
         const materialNome = material ? material.nome : "Material não encontrado";
+        const cidadeNome = cidade ? cidade.nome : "Cidade não encontrada";
         
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${equipeNome}</td>
+            <td>${cidadeNome}</td>
+            <td>${registro.atividade || "-"}</td>
             <td>${materialNome}</td>
             <td>${registro.quantidade}</td>
             <td>${registro.data_registro}</td>
@@ -143,26 +161,35 @@ function renderRegistrosTable() {
     });
 }
 
-function showRegistroForm() {
+function showRegistroForm(isEdit = false) {
     document.getElementById("form-registro").style.display = "block";
-    // Limpar campos e materiais adicionais
-    document.getElementById("registro-equipe").value = "";
-    document.getElementById("registro-data").value = "";
-    document.getElementById("registro-observacao").value = "";
     
-    // Remover todos os campos de material, exceto o primeiro
-    const materiaisContainer = document.getElementById("materiais-container");
-    while (materiaisContainer.children.length > 1) {
-        materiaisContainer.removeChild(materiaisContainer.lastChild);
+    if (!isEdit) {
+        // Limpar campos para novo registro
+        editingRegistroId = null;
+        document.getElementById("registro-equipe").value = "";
+        document.getElementById("registro-data").value = "";
+        document.getElementById("registro-atividade").value = "";
+        document.getElementById("registro-observacao").value = "";
+        
+        // Remover todos os campos de material, exceto o primeiro
+        const materiaisContainer = document.getElementById("materiais-container");
+        while (materiaisContainer.children.length > 1) {
+            materiaisContainer.removeChild(materiaisContainer.lastChild);
+        }
+        // Resetar o primeiro campo de material
+        document.getElementById("registro-material-0").value = "";
+        document.getElementById("registro-quantidade-0").value = "";
+        materialIndex = 0;
+        
+        // Reabilitar o botão de adicionar material
+        document.getElementById("btn-add-material").style.display = "inline-block";
     }
-    // Resetar o primeiro campo de material
-    document.getElementById("registro-material-0").value = "";
-    document.getElementById("registro-quantidade-0").value = "";
-    materialIndex = 0;
 }
 
 function hideRegistroForm() {
     document.getElementById("form-registro").style.display = "none";
+    editingRegistroId = null;
 }
 
 function handleRegistroSubmit(e) {
@@ -170,65 +197,133 @@ function handleRegistroSubmit(e) {
     
     const equipeId = document.getElementById("registro-equipe").value;
     const data = document.getElementById("registro-data").value;
+    const atividade = document.getElementById("registro-atividade").value;
     const observacao = document.getElementById("registro-observacao").value;
     
-    const materiais = [];
-    document.querySelectorAll(".material-item").forEach(item => {
-        const materialSelect = item.querySelector(".registro-material");
-        const quantidadeInput = item.querySelector(".registro-quantidade");
+    if (editingRegistroId) {
+        // Modo de edição - editar apenas um registro
+        const materialId = document.getElementById("registro-material-0").value;
+        const quantidade = document.getElementById("registro-quantidade-0").value;
         
-        if (materialSelect.value && quantidadeInput.value) {
-            materiais.push({
-                material_id: parseInt(materialSelect.value),
-                quantidade: parseFloat(quantidadeInput.value)
-            });
+        if (!materialId || !quantidade) {
+            showAlert("Por favor, preencha o material e quantidade.", "danger");
+            return;
         }
-    });
+        
+        if (!atividade) {
+            showAlert("Por favor, preencha a atividade.", "danger");
+            return;
+        }
+        
+        const registroData = {
+            equipe_id: parseInt(equipeId),
+            material_id: parseInt(materialId),
+            quantidade: parseFloat(quantidade),
+            atividade: atividade,
+            data_registro: data,
+            observacao: observacao
+        };
+        
+        fetch(`/api/registros/${editingRegistroId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(registroData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro ao atualizar registro");
+            }
+            return response.json();
+        })
+        .then(data => {
+            showAlert("Registro atualizado com sucesso!", "success");
+            hideRegistroForm();
+            loadRegistros();
+        })
+        .catch(error => {
+            console.error("Erro:", error);
+            showAlert("Erro ao atualizar registro. Por favor, tente novamente.", "danger");
+        });
+    } else {
+        // Modo de criação - criar múltiplos registros
+        const materiais = [];
+        document.querySelectorAll(".material-item").forEach(item => {
+            const materialSelect = item.querySelector(".registro-material");
+            const quantidadeInput = item.querySelector(".registro-quantidade");
+            
+            if (materialSelect.value && quantidadeInput.value) {
+                materiais.push({
+                    material_id: parseInt(materialSelect.value),
+                    quantidade: parseFloat(quantidadeInput.value),
+                    atividade: atividade
+                });
+            }
+        });
 
-    if (materiais.length === 0) {
-        showAlert("Por favor, adicione pelo menos um material e quantidade.", "danger");
-        return;
-    }
-    
-    const registroData = {
-        equipe_id: parseInt(equipeId),
-        data_registro: data,
-        observacao: observacao,
-        materiais: materiais
-    };
-    
-    fetch("/api/registros/lote", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(registroData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Erro ao salvar registro");
+        if (materiais.length === 0) {
+            showAlert("Por favor, adicione pelo menos um material e quantidade.", "danger");
+            return;
         }
-        return response.json();
-    })
-    .then(data => {
-        showAlert("Registros cadastrados com sucesso!", "success");
-        hideRegistroForm();
-        loadRegistros();
-    })
-    .catch(error => {
-        console.error("Erro:", error);
-        showAlert("Erro ao salvar registro. Por favor, tente novamente.", "danger");
-    });
+        
+        const registroData = {
+            equipe_id: parseInt(equipeId),
+            data_registro: data,
+            observacao: observacao,
+            materiais: materiais
+        };
+        
+        fetch("/api/registros/lote", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(registroData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro ao salvar registro");
+            }
+            return response.json();
+        })
+        .then(data => {
+            showAlert("Registros cadastrados com sucesso!", "success");
+            hideRegistroForm();
+            loadRegistros();
+        })
+        .catch(error => {
+            console.error("Erro:", error);
+            showAlert("Erro ao salvar registro. Por favor, tente novamente.", "danger");
+        });
+    }
 }
 
-// Funções de edição e exclusão (manter como estão, pois operam em registros individuais)
+// Funções de edição e exclusão
 function editRegistro(id) {
     const registro = registrosData.find(r => r.id === id);
     if (registro) {
-        // Para edição, você pode precisar de um formulário diferente ou adaptar este
-        // Por simplicidade, vamos apenas exibir os dados no console para este exemplo
-        console.log("Editar Registro:", registro);
-        showAlert("Funcionalidade de edição em desenvolvimento. Verifique o console para os dados.", "info");
+        editingRegistroId = id;
+        showRegistroForm(true);
+        
+        // Preencher o formulário com os dados do registro
+        document.getElementById("registro-equipe").value = registro.equipe_id;
+        document.getElementById("registro-data").value = registro.data_registro.split(' ')[0]; // Pegar apenas a data
+        document.getElementById("registro-atividade").value = registro.atividade || "";
+        document.getElementById("registro-observacao").value = registro.observacao || "";
+        
+        // Limpar campos de material extras e preencher apenas o primeiro
+        const materiaisContainer = document.getElementById("materiais-container");
+        while (materiaisContainer.children.length > 1) {
+            materiaisContainer.removeChild(materiaisContainer.lastChild);
+        }
+        
+        document.getElementById("registro-material-0").value = registro.material_id;
+        document.getElementById("registro-quantidade-0").value = registro.quantidade;
+        materialIndex = 0;
+        
+        // Desabilitar o botão de adicionar material durante a edição
+        document.getElementById("btn-add-material").style.display = "none";
     }
 }
 

@@ -22,8 +22,8 @@ def criar_registro():
     """Cria um novo registro de uso de material"""
     dados = request.json
     
-    if not dados or not 'material_id' in dados or not 'equipe_id' in dados or not 'quantidade' in dados:
-        return jsonify({'erro': 'Dados incompletos. Material, equipe e quantidade são obrigatórios.'}), 400
+    if not dados or not 'material_id' in dados or not 'equipe_id' in dados or not 'quantidade' in dados or not 'atividade' in dados:
+        return jsonify({'erro': 'Dados incompletos. Material, equipe, quantidade e atividade são obrigatórios.'}), 400
     
     # Verifica se o material existe
     material = Material.query.get(dados['material_id'])
@@ -44,10 +44,11 @@ def criar_registro():
             return jsonify({'erro': 'Formato de data inválido. Use YYYY-MM-DD.'}), 400
     
     novo_registro = RegistroMaterial(
-        material_id=dados['material_id'],
-        equipe_id=dados['equipe_id'],
-        quantidade=dados['quantidade'],
-        observacao=dados.get('observacao', '')
+        material_id=dados["material_id"],
+        equipe_id=dados["equipe_id"],
+        quantidade=dados["quantidade"],
+        atividade=dados["atividade"],
+        observacao=dados.get("observacao", "")
     )
     
     if data_registro:
@@ -95,10 +96,11 @@ def criar_registros_lote():
         
         # Criar registro
         novo_registro = RegistroMaterial(
-            material_id=item['material_id'],
-            equipe_id=dados['equipe_id'],
-            quantidade=item['quantidade'],
-            observacao=item.get('observacao', '')
+            material_id=item["material_id"],
+            equipe_id=dados["equipe_id"],
+            quantidade=item["quantidade"],
+            atividade=item.get("atividade", ""), # Adiciona atividade aqui
+            observacao=item.get("observacao", "")
         )
         
         if data_registro:
@@ -146,6 +148,9 @@ def atualizar_registro(id):
         
     if 'observacao' in dados:
         registro.observacao = dados['observacao']
+
+    if 'atividade' in dados:
+        registro.atividade = dados['atividade']
     
     if 'data_registro' in dados and dados['data_registro']:
         try:

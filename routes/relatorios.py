@@ -437,9 +437,123 @@ def tabela_material_equipe():
     for material in tabela:
         tabela[material]['total'] = sum(v for k, v in tabela[material].items() if k != 'total')
     
+@relatorio_bp.route('/material-por-atividade', methods=['GET'])
+def relatorio_material_por_atividade():
+    """Gera dados para gráfico de material por atividade"""
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+    
+    # Construir consulta
+    query = db.session.query(
+        RegistroMaterial.atividade.label('atividade'),
+        Material.nome.label('material_nome'),
+        db.func.sum(RegistroMaterial.quantidade).label('quantidade_total')
+    ).join(
+        Material, RegistroMaterial.material_id == Material.id
+    )
+    
+    # Aplicar filtros de data
+    if data_inicio:
+        try:
+            data_inicio_dt = datetime.strptime(data_inicio, '%Y-%m-%d')
+            query = query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
+        except ValueError:
+            return jsonify({'erro': 'Formato de data inválido para data_inicio. Use YYYY-MM-DD.'}), 400
+    if data_fim:
+        try:
+            data_fim_dt = datetime.strptime(data_fim, '%Y-%m-%d')
+            query = query.filter(RegistroMaterial.data_registro <= data_fim_dt)
+        except ValueError:
+            return jsonify({'erro': 'Formato de data inválido para data_fim. Use YYYY-MM-DD.'}), 400
+    
+    # Agrupar resultados
+    query = query.group_by(RegistroMaterial.atividade, Material.nome).order_by(RegistroMaterial.atividade, Material.nome)
+    
+    resultados = query.all()
+    
+    # Formatar para gráfico
+    dados = []
+    for r in resultados:
+        dados.append({
+            'atividade': r.atividade,
+            'material': r.material_nome,
+            'quantidade': float(r.quantidade_total)
+        })
+    
+    return jsonify(dados)
+
+@relatorio_bp.route('/tabela-material-atividade', methods=['GET'])
+def tabela_material_atividade():
+    """Gera dados para tabela de materiais x atividades"""
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
+    
+    # Construir consulta
+    query = db.session.query(
+        Material.nome.label('material_nome'),
+        RegistroMaterial.atividade.label('atividade'),
+        db.func.sum(RegistroMaterial.quantidade).label('quantidade_total')
+    ).join(
+        Material, RegistroMaterial.material_id == Material.id
+    )
+    
+    # Aplicar filtros de data
+    if data_inicio:
+        try:
+            data_inicio_dt = datetime.strptime(data_inicio, '%Y-%m-%d')
+            query = query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
+        except ValueError:
+            return jsonify({'erro': 'Formato de data inválido para data_inicio. Use YYYY-MM-DD.'}), 400
+    if data_fim:
+        try:
+            data_fim_dt = datetime.strptime(data_fim, '%Y-%m-%d')
+            query = query.filter(RegistroMaterial.data_registro <= data_fim_dt)
+        except ValueError:
+            return jsonify({'erro': 'Formato de data inválido para data_fim. Use YYYY-MM-DD.'}), 400
+    
+    # Agrupar resultados
+    query = query.group_by(Material.nome, RegistroMaterial.atividade).order_by(Material.nome, RegistroMaterial.atividade)
+    
+    resultados = query.all()
+    
+    # Obter lista de todas as atividades e materiais que têm registros no período filtrado
+    atividades_query = db.session.query(RegistroMaterial.atividade).distinct()
+    materiais_query = db.session.query(Material.nome).join(
+        RegistroMaterial, Material.id == RegistroMaterial.material_id
+    )
+    
+    # Aplicar os mesmos filtros de data
+    if data_inicio:
+        data_inicio_dt = datetime.strptime(data_inicio, '%Y-%m-%d')
+        atividades_query = atividades_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
+        materiais_query = materiais_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
+    if data_fim:
+        data_fim_dt = datetime.strptime(data_fim, '%Y-%m-%d')
+        atividades_query = atividades_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
+        materiais_query = materiais_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
+    
+    atividades = [a[0] for a in atividades_query.order_by(RegistroMaterial.atividade).all()]
+    materiais = [m[0] for m in materiais_query.distinct().order_by(Material.nome).all()]
+    
+    # Criar estrutura da tabela
+    tabela = {}
+    for material in materiais:
+        tabela[material] = {}
+        for atividade in atividades:
+            tabela[material][atividade] = 0
+    
+    # Preencher com dados reais
+    for r in resultados:
+        if r.material_nome in tabela:
+            tabela[r.material_nome][r.atividade] = float(r.quantidade_total)
+    
+    # Calcular totais por material
+    for material in tabela:
+        tabela[material]['total'] = sum(v for k, v in tabela[material].items() if k != 'total')
+    
     return jsonify({
         'tabela': tabela,
-        'equipes': equipes,
+        'atividades': atividades,
         'materiais': materiais
     })
 
