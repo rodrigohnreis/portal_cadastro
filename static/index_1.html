@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Portal de Cadastro</div>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">Início</a></li>
+                    <li><a href="/cidades" class="nav-link">Cidades</a></li>
+                    <li><a href="/equipes" class="nav-link">Equipes</a></li>
+                    <li><a href="/materiais" class="nav-link">Materiais</a></li>
+                    <li><a href="/registros" class="nav-link">Registros</a></li>
+                    <li><a href="/relatorios" class="nav-link">Relatórios</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Alertas -->
+            <div id="alert-container"></div>
+
+            <!-- Seção Inicial -->
+            <section id="home" class="page-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Bem-vindo ao Portal de Cadastro</h2>
+                    </div>
+                    <p>Este portal permite o cadastro e gerenciamento de:</p>
+                    <ul class="mt-2 mb-3">
+                        <li>Cidades</li>
+                        <li>Equipes</li>
+                        <li>Materiais</li>
+                        <li>Registros de uso de materiais</li>
+                    </ul>
+                    <p>Utilize o menu superior para navegar entre as seções.</p>
+                </div>
+
+                <div class="dashboard-stats mt-3">
+                    <div class="stat-card">
+                        <h3 id="total-cidades">0</h3>
+                        <p>Cidades</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-equipes">0</h3>
+                        <p>Equipes</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-materiais">0</h3>
+                        <p>Materiais</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-registros">0</h3>
+                        <p>Registros</p>
+                    </div>
+                </div>
+
+                <!-- Filtros de Data -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Filtros de Data</h3>
+                    </div>
+                    <div class="filter-container">
+                        <div class="form-group">
+                            <label for="data-inicio">Data Início:</label>
+                            <input type="date" id="data-inicio" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="data-fim">Data Fim:</label>
+                            <input type="date" id="data-fim" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <button id="aplicar-filtros" class="btn btn-primary">Aplicar Filtros</button>
+                            <button id="limpar-filtros" class="btn btn-secondary">Limpar Filtros</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="charts-container mt-3">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Material por Cidade</h3>
+                        </div>
+                        <canvas id="chart-material-cidade"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Material por Equipe</h3>
+                        </div>
+                        <canvas id="chart-material-equipe"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabelas -->
+                <div class="tables-container mt-3">
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Materiais por Cidade</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabela-material-cidade" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Material</th>
+                                        <!-- Colunas das cidades serão adicionadas dinamicamente -->
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dados serão preenchidos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Materiais por Equipe</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabela-material-equipe" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Material</th>
+                                        <!-- Colunas das equipes serão adicionadas dinamicamente -->
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dados serão preenchidos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+</body>
+</html>
+

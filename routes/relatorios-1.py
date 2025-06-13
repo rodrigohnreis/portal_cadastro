@@ -317,50 +317,29 @@ def tabela_material_cidade():
     
     resultados = query.all()
     
-    # Obter lista de todas as cidades e materiais que têm registros no período filtrado
-    cidades_query = db.session.query(Cidade.nome).join(
-        Equipe, Cidade.id == Equipe.cidade_id
-    ).join(
-        RegistroMaterial, Equipe.id == RegistroMaterial.equipe_id
-    )
-    
-    materiais_query = db.session.query(Material.nome).join(
-        RegistroMaterial, Material.id == RegistroMaterial.material_id
-    )
-    
-    # Aplicar os mesmos filtros de data
-    if data_inicio:
-        data_inicio_dt = datetime.strptime(data_inicio, '%Y-%m-%d')
-        cidades_query = cidades_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
-        materiais_query = materiais_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
-    if data_fim:
-        data_fim_dt = datetime.strptime(data_fim, '%Y-%m-%d')
-        cidades_query = cidades_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
-        materiais_query = materiais_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
-    
-    cidades = [c[0] for c in cidades_query.distinct().order_by(Cidade.nome).all()]
-    materiais = [m[0] for m in materiais_query.distinct().order_by(Material.nome).all()]
+    # Obter lista de todas as cidades e materiais
+    cidades = db.session.query(Cidade.nome).distinct().order_by(Cidade.nome).all()
+    materiais = db.session.query(Material.nome).distinct().order_by(Material.nome).all()
     
     # Criar estrutura da tabela
     tabela = {}
     for material in materiais:
-        tabela[material] = {}
+        tabela[material[0]] = {}
         for cidade in cidades:
-            tabela[material][cidade] = 0
+            tabela[material[0]][cidade[0]] = 0
     
     # Preencher com dados reais
     for r in resultados:
-        if r.material_nome in tabela:
-            tabela[r.material_nome][r.cidade_nome] = float(r.quantidade_total)
+        tabela[r.material_nome][r.cidade_nome] = float(r.quantidade_total)
     
     # Calcular totais por material
     for material in tabela:
-        tabela[material]['total'] = sum(v for k, v in tabela[material].items() if k != 'total')
+        tabela[material]['total'] = sum(tabela[material].values())
     
     return jsonify({
         'tabela': tabela,
-        'cidades': cidades,
-        'materiais': materiais
+        'cidades': [c[0] for c in cidades],
+        'materiais': [m[0] for m in materiais]
     })
 
 @relatorio_bp.route('/tabela-material-equipe', methods=['GET'])
@@ -399,47 +378,28 @@ def tabela_material_equipe():
     
     resultados = query.all()
     
-    # Obter lista de todas as equipes e materiais que têm registros no período filtrado
-    equipes_query = db.session.query(Equipe.nome).join(
-        RegistroMaterial, Equipe.id == RegistroMaterial.equipe_id
-    )
-    
-    materiais_query = db.session.query(Material.nome).join(
-        RegistroMaterial, Material.id == RegistroMaterial.material_id
-    )
-    
-    # Aplicar os mesmos filtros de data
-    if data_inicio:
-        data_inicio_dt = datetime.strptime(data_inicio, '%Y-%m-%d')
-        equipes_query = equipes_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
-        materiais_query = materiais_query.filter(RegistroMaterial.data_registro >= data_inicio_dt)
-    if data_fim:
-        data_fim_dt = datetime.strptime(data_fim, '%Y-%m-%d')
-        equipes_query = equipes_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
-        materiais_query = materiais_query.filter(RegistroMaterial.data_registro <= data_fim_dt)
-    
-    equipes = [e[0] for e in equipes_query.distinct().order_by(Equipe.nome).all()]
-    materiais = [m[0] for m in materiais_query.distinct().order_by(Material.nome).all()]
+    # Obter lista de todas as equipes e materiais
+    equipes = db.session.query(Equipe.nome).distinct().order_by(Equipe.nome).all()
+    materiais = db.session.query(Material.nome).distinct().order_by(Material.nome).all()
     
     # Criar estrutura da tabela
     tabela = {}
     for material in materiais:
-        tabela[material] = {}
+        tabela[material[0]] = {}
         for equipe in equipes:
-            tabela[material][equipe] = 0
+            tabela[material[0]][equipe[0]] = 0
     
     # Preencher com dados reais
     for r in resultados:
-        if r.material_nome in tabela:
-            tabela[r.material_nome][r.equipe_nome] = float(r.quantidade_total)
+        tabela[r.material_nome][r.equipe_nome] = float(r.quantidade_total)
     
     # Calcular totais por material
     for material in tabela:
-        tabela[material]['total'] = sum(v for k, v in tabela[material].items() if k != 'total')
+        tabela[material]['total'] = sum(tabela[material].values())
     
     return jsonify({
         'tabela': tabela,
-        'equipes': equipes,
-        'materiais': materiais
+        'equipes': [e[0] for e in equipes],
+        'materiais': [m[0] for m in materiais]
     })
 
