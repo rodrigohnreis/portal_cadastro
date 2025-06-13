@@ -23,9 +23,15 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'sta
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # Configuração do banco de dados (PostgreSQL)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
 # Caso queira usar SQLite, descomente a linha abaixo:
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///portal_cadastro.db"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
+import os
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
