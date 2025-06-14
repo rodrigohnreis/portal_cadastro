@@ -4,4 +4,4 @@ Flask-Migrate==4.0.5
 psycopg2-binary==2.9.10
 gunicorn==21.2.0
 fpdf2==2.8.3
-dotenv  
+python-dotenv==1.0.0
