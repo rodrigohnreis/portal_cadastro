@@ -68,6 +68,7 @@ def criar_registros_lote():
     """Cria múltiplos registros de uso de material para uma equipe em uma data"""
     dados = request.json
     
+    # Validação: equipe_id, cidade_id e lista de materiais obrigatórios
     if not dados or not 'equipe_id' in dados or not 'cidade_id' in dados or not 'materiais' in dados or not isinstance(dados['materiais'], list):
         return jsonify({'erro': 'Dados incompletos. Equipe, cidade e lista de materiais são obrigatórios.'}), 400
     
@@ -75,6 +76,9 @@ def criar_registros_lote():
     equipe = Equipe.query.get(dados['equipe_id'])
     if not equipe:
         return jsonify({'erro': 'Equipe não encontrada.'}), 404
+    
+    # Verifica se a cidade existe? (Se necessário, caso tenha tabela Cidade)
+    # Você pode implementar essa validação aqui se desejar.
     
     # Data de registro (usa a data atual se não for fornecida)
     data_registro = None
@@ -84,24 +88,22 @@ def criar_registros_lote():
         except ValueError:
             return jsonify({'erro': 'Formato de data inválido. Use YYYY-MM-DD.'}), 400
     
-    # Processar cada material
     registros_criados = []
     for item in dados['materiais']:
         if not 'material_id' in item or not 'quantidade' in item:
             continue
-            
+        
         # Verificar se o material existe
         material = Material.query.get(item['material_id'])
         if not material:
             continue
         
-        # Criar registro
         novo_registro = RegistroMaterial(
             material_id=item["material_id"],
             equipe_id=dados["equipe_id"],
             cidade_id=dados["cidade_id"],
             quantidade=item["quantidade"],
-            atividade=item.get("atividade", ""), # Adiciona atividade aqui
+            atividade=item.get("atividade", ""),  # Atividade pode vir no item ou ser vazia
             observacao=item.get("observacao", "")
         )
         
@@ -111,10 +113,10 @@ def criar_registros_lote():
         try:
             db.session.add(novo_registro)
             registros_criados.append(novo_registro)
-        except Exception as e:
+        except Exception:
+            # Ignorar registro inválido, continuar
             continue
     
-    # Commit das alterações
     if registros_criados:
         try:
             db.session.commit()
@@ -132,14 +134,12 @@ def atualizar_registro(id):
     dados = request.json
     
     if 'material_id' in dados:
-        # Verifica se o material existe
         material = Material.query.get(dados['material_id'])
         if not material:
             return jsonify({'erro': 'Material não encontrado.'}), 404
         registro.material_id = dados['material_id']
         
     if 'equipe_id' in dados:
-        # Verifica se a equipe existe
         equipe = Equipe.query.get(dados['equipe_id'])
         if not equipe:
             return jsonify({'erro': 'Equipe não encontrada.'}), 404

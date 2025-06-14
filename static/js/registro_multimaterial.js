@@ -154,7 +154,13 @@ function enviarRegistroLote() {
     }
     
     // Validar materiais
-    const materiais = materiaisRegistro.filter(m => m.material_id && m.quantidade);
+    const materiais = materiaisRegistro
+      .filter(m => m.material_id && m.quantidade)
+      .map(m => ({
+        material_id: parseInt(m.material_id),   // converte para inteiro
+        quantidade: parseFloat(m.quantidade),   // converte para float
+        observacao: m.observacao || ''
+      }));
     
     if (materiais.length === 0) {
         mostrarAlerta('Adicione pelo menos um material com quantidade', 'warning');
@@ -163,7 +169,7 @@ function enviarRegistroLote() {
     
     // Preparar dados para envio
     const dados = {
-        equipe_id: equipe_id,
+        equipe_id: parseInt(equipe_id),  // converte para inteiro
         data_registro: data_registro,
         materiais: materiais
     };
