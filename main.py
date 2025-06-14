@@ -18,6 +18,8 @@ from routes.cadastro.material import material_bp
 from routes.cadastro.registro import registro_bp
 from routes.relatorios import relatorio_bp
 
+
+
 # Criação da aplicação Flask
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
@@ -28,6 +30,8 @@ app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///portal_cadastro.db"
 #app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:12345Ab@localhost:5432/portal_cadastro"
 import os
+from dotenv import load_dotenv
+load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
