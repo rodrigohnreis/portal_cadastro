@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCharts();
     loadChartsAndTables();
     setupDateFilters();
+    loadFilterOptions();
 });
 
 // Função para inicializar os gráficos
@@ -566,5 +567,229 @@ function carregarDadosIniciais() {
     carregarTabelaMaterialCidade();
     carregarTabelaMaterialEquipe();
     carregarTabelaMaterialAtividade(); // Nova função
+}
+
+
+
+// Função para carregar opções de filtro (equipes e cidades)
+async function loadFilterOptions() {
+    try {
+        // Carregar equipes
+        const equipesResponse = await fetch('/relatorios/equipes');
+        const equipes = await equipesResponse.json();
+        const equipeSelect = document.getElementById('filtro-equipe');
+        equipeSelect.innerHTML = '';
+        equipes.forEach(equipe => {
+            const option = document.createElement('option');
+            option.value = equipe.id;
+            option.textContent = equipe.nome;
+            equipeSelect.appendChild(option);
+        });
+
+        // Carregar cidades
+        const cidadesResponse = await fetch('/relatorios/cidades');
+        const cidades = await cidadesResponse.json();
+        const cidadeSelect = document.getElementById('filtro-cidade');
+        cidadeSelect.innerHTML = '';
+        cidades.forEach(cidade => {
+            const option = document.createElement('option');
+            option.value = cidade.id;
+            option.textContent = cidade.nome;
+            cidadeSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar opções de filtro:', error);
+    }
+}
+
+// Funções para atualizar as tabelas com base nos filtros
+async function updateTabelaMaterialCidade(dataInicio, dataFim, equipeIds, cidadeIds) {
+    try {
+        let url = `/relatorios/tabela-material-cidade?`;
+        if (dataInicio) url += `data_inicio=${dataInicio}&`;
+        if (dataFim) url += `data_fim=${dataFim}&`;
+        if (equipeIds && equipeIds.length > 0) url += `equipe_ids=${equipeIds.join(',')}&`;
+        if (cidadeIds && cidadeIds.length > 0) url += `cidade_ids=${cidadeIds.join(',')}&`;
+        url = url.slice(0, -1); // Remover o último '&' ou '?'
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const tabelaBody = document.querySelector('#tabela-material-cidade tbody');
+        const tabelaHead = document.querySelector('#tabela-material-cidade thead tr');
+        tabelaBody.innerHTML = '';
+        tabelaHead.innerHTML = '<th>Material</th>';
+
+        // Adicionar colunas de cidades
+        data.cidades.forEach(cidade => {
+            const th = document.createElement('th');
+            th.textContent = cidade;
+            tabelaHead.appendChild(th);
+        });
+        const thTotal = document.createElement('th');
+        thTotal.textContent = 'Total';
+        tabelaHead.appendChild(thTotal);
+
+        // Preencher linhas da tabela
+        data.materiais.forEach(material => {
+            const row = tabelaBody.insertRow();
+            const cellMaterial = row.insertCell();
+            cellMaterial.textContent = material;
+
+            data.cidades.forEach(cidade => {
+                const cell = row.insertCell();
+                cell.textContent = data.tabela[material][cidade] || 0;
+            });
+            const cellTotal = row.insertCell();
+            cellTotal.textContent = data.tabela[material].total || 0;
+        });
+    } catch (error) {
+        console.error('Erro ao carregar tabela de material por cidade:', error);
+    }
+}
+
+async function updateTabelaMaterialEquipe(dataInicio, dataFim, equipeIds, cidadeIds) {
+    try {
+        let url = `/relatorios/tabela-material-equipe?`;
+        if (dataInicio) url += `data_inicio=${dataInicio}&`;
+        if (dataFim) url += `data_fim=${dataFim}&`;
+        if (equipeIds && equipeIds.length > 0) url += `equipe_ids=${equipeIds.join(',')}&`;
+        if (cidadeIds && cidadeIds.length > 0) url += `cidade_ids=${cidadeIds.join(',')}&`;
+        url = url.slice(0, -1); // Remover o último '&' ou '?'
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const tabelaBody = document.querySelector('#tabela-material-equipe tbody');
+        const tabelaHead = document.querySelector('#tabela-material-equipe thead tr');
+        tabelaBody.innerHTML = '';
+        tabelaHead.innerHTML = '<th>Material</th>';
+
+        // Adicionar colunas de equipes
+        data.equipes.forEach(equipe => {
+            const th = document.createElement('th');
+            th.textContent = equipe;
+            tabelaHead.appendChild(th);
+        });
+        const thTotal = document.createElement('th');
+        thTotal.textContent = 'Total';
+        tabelaHead.appendChild(thTotal);
+
+        // Preencher linhas da tabela
+        data.materiais.forEach(material => {
+            const row = tabelaBody.insertRow();
+            const cellMaterial = row.insertCell();
+            cellMaterial.textContent = material;
+
+            data.equipes.forEach(equipe => {
+                const cell = row.insertCell();
+                cell.textContent = data.tabela[material][equipe] || 0;
+            });
+            const cellTotal = row.insertCell();
+            cellTotal.textContent = data.tabela[material].total || 0;
+        });
+    } catch (error) {
+        console.error('Erro ao carregar tabela de material por equipe:', error);
+    }
+}
+
+async function updateTabelaMaterialAtividade(dataInicio, dataFim, equipeIds, cidadeIds) {
+    try {
+        let url = `/relatorios/tabela-material-atividade?`;
+        if (dataInicio) url += `data_inicio=${dataInicio}&`;
+        if (dataFim) url += `data_fim=${dataFim}&`;
+        if (equipeIds && equipeIds.length > 0) url += `equipe_ids=${equipeIds.join(',')}&`;
+        if (cidadeIds && cidadeIds.length > 0) url += `cidade_ids=${cidadeIds.join(',')}&`;
+        url = url.slice(0, -1); // Remover o último '&' ou '?'
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const tabelaBody = document.querySelector('#tabela-material-atividade tbody');
+        const tabelaHead = document.querySelector('#tabela-material-atividade thead tr');
+        tabelaBody.innerHTML = '';
+        tabelaHead.innerHTML = '<th>Material</th>';
+
+        // Adicionar colunas de atividades
+        data.atividades.forEach(atividade => {
+            const th = document.createElement('th');
+            th.textContent = atividade;
+            tabelaHead.appendChild(th);
+        });
+        const thTotal = document.createElement('th');
+        thTotal.textContent = 'Total';
+        tabelaHead.appendChild(thTotal);
+
+        // Preencher linhas da tabela
+        data.materiais.forEach(material => {
+            const row = tabelaBody.insertRow();
+            const cellMaterial = row.insertCell();
+            cellMaterial.textContent = material;
+
+            data.atividades.forEach(atividade => {
+                const cell = row.insertCell();
+                cell.textContent = data.tabela[material][atividade] || 0;
+            });
+            const cellTotal = row.insertCell();
+            cellTotal.textContent = data.tabela[material].total || 0;
+        });
+    } catch (error) {
+        console.error('Erro ao carregar tabela de material por atividade:', error);
+    }
+}
+
+// Atualizar a função setupDateFilters para chamar as novas funções de atualização de tabela
+function setupDateFilters() {
+    const dataInicioInput = document.getElementById('data-inicio');
+    const dataFimInput = document.getElementById('data-fim');
+    const aplicarFiltrosBtn = document.getElementById('aplicar-filtros');
+    const limparFiltrosBtn = document.getElementById('limpar-filtros');
+    const equipeSelect = document.getElementById('filtro-equipe');
+    const cidadeSelect = document.getElementById('filtro-cidade');
+
+    aplicarFiltrosBtn.addEventListener('click', () => {
+        const dataInicio = dataInicioInput.value;
+        const dataFim = dataFimInput.value;
+        const selectedEquipes = Array.from(equipeSelect.selectedOptions).map(option => option.value);
+        const selectedCidades = Array.from(cidadeSelect.selectedOptions).map(option => option.value);
+
+        // Tabelas
+        updateTabelaMaterialCidade(dataInicio, dataFim, selectedEquipes, selectedCidades);
+        updateTabelaMaterialEquipe(dataInicio, dataFim, selectedEquipes, selectedCidades);
+        updateTabelaMaterialAtividade(dataInicio, dataFim, selectedEquipes, selectedCidades);
+
+        // Gráficos
+        carregarMaterialPorCidade(dataInicio, dataFim, selectedEquipes, selectedCidades);
+        carregarMaterialPorEquipe(dataInicio, dataFim, selectedEquipes, selectedCidades);
+        carregarMaterialPorAtividade(dataInicio, dataFim, selectedEquipes, selectedCidades);
+    });
+
+    limparFiltrosBtn.addEventListener('click', () => {
+        dataInicioInput.value = '';
+        dataFimInput.value = '';
+        Array.from(equipeSelect.options).forEach(option => option.selected = false);
+        Array.from(cidadeSelect.options).forEach(option => option.selected = false);
+
+        // Recarregar tudo sem filtro
+        updateTabelaMaterialCidade('', '', [], []);
+        updateTabelaMaterialEquipe('', '', [], []);
+        updateTabelaMaterialAtividade('', '', [], []);
+
+        carregarMaterialPorCidade('', '', [], []);
+        carregarMaterialPorEquipe('', '', [], []);
+        carregarMaterialPorAtividade('', '', [], []);
+    });
+}
+
+
+// Atualizar a função loadChartsAndTables para chamar as novas funções de atualização de tabela
+function loadChartsAndTables() {
+    // Chamar as funções de atualização de tabela inicialmente sem filtros
+    updateTabelaMaterialCidade('', '', [], []);
+    updateTabelaMaterialEquipe('', '', [], []);
+    updateTabelaMaterialAtividade('', '', [], []);
+
+    // Implementar carregamento de gráficos (se necessário, adaptar para os novos filtros)
+    console.log('Carregando gráficos e tabelas com filtros iniciais...');
 }
 
